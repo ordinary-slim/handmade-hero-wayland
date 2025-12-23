@@ -1,14 +1,14 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <wayland-client.h>
-#include <cstring>
+#define _POSIX_C_SOURCE 200112L
 #include <sys/mman.h>
+#include <unistd.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <string.h>
+#include <wayland-client.h>
 #include "xdg-shell-client-protocol.h"
 
-// Shared mem pool alloc
-static void randname(char *buf);
-static int create_shm_file(void);
+void randname(char *buf);
+int create_shm_file(void);
 int allocate_shm_file(size_t size);
 
 /* Wayland code */
@@ -23,6 +23,9 @@ struct client_state {
     struct wl_surface *wl_surface;
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *xdg_toplevel;
+    /* State */
+    float offset;
+    uint32_t last_frame;
 };
 
 static void
@@ -41,7 +44,7 @@ draw_frame(struct client_state *state)
 {
     const int width = 640, height = 480;
     int stride = width * 4;
-    int size = stride * height;
+    size_t size = stride * height;
 
     int fd = allocate_shm_file(size);
     if (fd == -1) {
@@ -62,9 +65,10 @@ draw_frame(struct client_state *state)
     close(fd);
 
     /* Draw checkerboxed background */
+    int offset = (int)state->offset % 8;
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if ((x + y / 8 * 8) % 16 < 8)
+            if (((x + offset) + (y + offset) / 8 * 8) % 16 < 8)
                 data[y * width + x] = 0xFF666666;
             else
                 data[y * width + x] = 0xFFEEEEEE;
@@ -80,7 +84,7 @@ static void
 xdg_surface_configure(void *data,
         struct xdg_surface *xdg_surface, uint32_t serial)
 {
-    struct client_state *state = (client_state*)data;
+    struct client_state *state = (struct client_state *)data;
     xdg_surface_ack_configure(xdg_surface, serial);
 
     struct wl_buffer *buffer = draw_frame(state);
@@ -103,37 +107,67 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 };
 
 static void
-registry_handle_global(void *data, struct wl_registry *wl_registry,
-		uint32_t name, const char *interface, uint32_t version)
+wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time);
+
+static const struct wl_callback_listener wl_surface_frame_listener = {
+  .done = wl_surface_frame_done,
+};
+
+static void
+wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
-    struct client_state *state = static_cast<struct client_state*>(data);
-    if (strcmp(interface, wl_compositor_interface.name) == 0) {
-        state->wl_compositor = static_cast<struct wl_compositor*>(wl_registry_bind(
-            wl_registry, name, &wl_compositor_interface, 6));
-    }
+  /* Destroy this callback */
+  wl_callback_destroy(cb);
+
+  /* Request another frame */
+  struct client_state *state = (struct client_state *)data;
+  cb = wl_surface_frame(state->wl_surface);
+  wl_callback_add_listener(cb, &wl_surface_frame_listener, state);
+
+  /* Update scroll amount at 24 pixels per second */
+  if (state->last_frame != 0) {
+    int elapsed = time - state->last_frame;
+    state->offset += elapsed / 1000.0 * 24;
+  }
+
+  /* Submit a frame for this event */
+  struct wl_buffer *buffer = draw_frame(state);
+  wl_surface_attach(state->wl_surface, buffer, 0, 0);
+  wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
+  wl_surface_commit(state->wl_surface);
+
+  state->last_frame = time;
+}
+
+static void
+registry_global(void *data, struct wl_registry *wl_registry,
+        uint32_t name, const char *interface, uint32_t version)
+{
+    struct client_state *state = (struct client_state *)data;
     if (strcmp(interface, wl_shm_interface.name) == 0) {
-        state->wl_shm = static_cast<struct wl_shm*>(wl_registry_bind(
-            wl_registry, name, &wl_shm_interface, 1));
-    }
-    if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-        state->xdg_wm_base = static_cast<struct xdg_wm_base*>(wl_registry_bind(
-                wl_registry, name, &xdg_wm_base_interface, 1));
+        state->wl_shm = (struct wl_shm *)wl_registry_bind(
+                wl_registry, name, &wl_shm_interface, 1);
+    } else if (strcmp(interface, wl_compositor_interface.name) == 0) {
+        state->wl_compositor = (struct wl_compositor *)wl_registry_bind(
+                wl_registry, name, &wl_compositor_interface, 6);
+    } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+        state->xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(
+                wl_registry, name, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(state->xdg_wm_base,
                 &xdg_wm_base_listener, state);
     }
 }
 
 static void
-registry_handle_global_remove(void *data, struct wl_registry *registry,
-    uint32_t name)
+registry_global_remove(void *data,
+        struct wl_registry *wl_registry, uint32_t name)
 {
-  // This space deliberately left blank
+    /* This space deliberately left blank */
 }
 
-static const struct wl_registry_listener
-registry_listener = {
-  .global = registry_handle_global,
-  .global_remove = registry_handle_global_remove,
+static const struct wl_registry_listener wl_registry_listener = {
+    .global = registry_global,
+    .global_remove = registry_global_remove,
 };
 
 int
@@ -142,7 +176,7 @@ main(int argc, char *argv[])
     struct client_state state = { 0 };
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
-    wl_registry_add_listener(state.wl_registry, &registry_listener, &state);
+    wl_registry_add_listener(state.wl_registry, &wl_registry_listener, &state);
     wl_display_roundtrip(state.wl_display);
 
     state.wl_surface = wl_compositor_create_surface(state.wl_compositor);
@@ -152,6 +186,9 @@ main(int argc, char *argv[])
     state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
     xdg_toplevel_set_title(state.xdg_toplevel, "Example client");
     wl_surface_commit(state.wl_surface);
+
+    struct wl_callback *cb = wl_surface_frame(state.wl_surface);
+    wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
 
     while (wl_display_dispatch(state.wl_display)) {
         /* This space deliberately left blank */
