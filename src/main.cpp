@@ -1,32 +1,51 @@
 #define _POSIX_C_SOURCE 200112L
-#include <sys/mman.h>
-#include <unistd.h>
-#include <limits.h>
-#include <stdbool.h>
-#include <string.h>
-#include <wayland-client.h>
-#include "xdg-shell-client-protocol.h"
+#include "wl_events.h"
 
+// Shared memory (CPU + RAM)
 void randname(char *buf);
 int create_shm_file(void);
 int allocate_shm_file(size_t size);
 
-/* Wayland code */
-struct client_state {
-    /* Globals */
-    struct wl_display *wl_display;
-    struct wl_registry *wl_registry;
-    struct wl_shm *wl_shm;
-    struct wl_compositor *wl_compositor;
-    struct xdg_wm_base *xdg_wm_base;
-    /* Objects */
-    struct wl_surface *wl_surface;
-    struct xdg_surface *xdg_surface;
-    struct xdg_toplevel *xdg_toplevel;
-    /* State */
-    float offset;
-    uint32_t last_frame;
+static const struct wl_pointer_listener wl_pointer_listener = {
+       .enter = wl_pointer_enter,
+       .leave = wl_pointer_leave,
+       .motion = wl_pointer_motion,
+       .button = wl_pointer_button,
+       .axis = wl_pointer_axis,
+       .frame = wl_pointer_frame,
+       .axis_source = wl_pointer_axis_source,
+       .axis_stop = wl_pointer_axis_stop,
+       .axis_discrete = wl_pointer_axis_discrete,
 };
+
+static void
+wl_seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
+{
+       struct client_state *state = (struct client_state *)data;
+
+       bool have_pointer = capabilities & WL_SEAT_CAPABILITY_POINTER;
+
+       if (have_pointer && state->wl_pointer == NULL) {
+               state->wl_pointer = (struct wl_pointer *)wl_seat_get_pointer(state->wl_seat);
+               wl_pointer_add_listener(state->wl_pointer,
+                               &wl_pointer_listener, state);
+       } else if (!have_pointer && state->wl_pointer != NULL) {
+               wl_pointer_release(state->wl_pointer);
+               state->wl_pointer = NULL;
+       }
+}
+
+static void
+wl_seat_name(void *data, struct wl_seat *wl_seat, const char *name)
+{
+       fprintf(stderr, "seat name: %s\n", name);
+}
+
+static const struct wl_seat_listener wl_seat_listener = {
+       .capabilities = wl_seat_capabilities,
+       .name = wl_seat_name,
+};
+
 
 static void
 wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
@@ -155,6 +174,11 @@ registry_global(void *data, struct wl_registry *wl_registry,
                 wl_registry, name, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(state->xdg_wm_base,
                 &xdg_wm_base_listener, state);
+    } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+            state->wl_seat = (struct wl_seat *)wl_registry_bind(
+                            wl_registry, name, &wl_seat_interface, 9);
+            wl_seat_add_listener(state->wl_seat,
+                            &wl_seat_listener, state);
     }
 }
 
