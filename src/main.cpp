@@ -61,7 +61,8 @@ static const struct wl_buffer_listener wl_buffer_listener = {
 static struct wl_buffer *
 draw_frame(struct client_state *state)
 {
-    const int width = 640, height = 480;
+    const int width = 1920, height = 1080;// Window resolution
+    const int radius = 100, circle_width = 20, stride_x = 300, stride_y = 300;
     int stride = width * 4;
     size_t size = stride * height;
 
@@ -83,11 +84,13 @@ draw_frame(struct client_state *state)
     wl_shm_pool_destroy(pool);
     close(fd);
 
-    /* Draw checkerboxed background */
-    int offset = (int)state->offset % 8;
+    /* Draw moving circles pattern */
+    int offset = (int)state->offset;
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (((x + offset) + (y + offset) / 8 * 8) % 16 < 8)
+            double d = sqrt((double)(pow((x + offset) % stride_x - stride_x / 2, 2) +
+                       pow((y + offset) % stride_y - stride_y / 2, 2)));
+            if ((d <= radius + circle_width) && (d >= radius - circle_width))
                 data[y * width + x] = 0xFF666666;
             else
                 data[y * width + x] = 0xFFEEEEEE;
