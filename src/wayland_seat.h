@@ -1,3 +1,4 @@
+#pragma once
 #include "wayland_keyboard_events.h"
 #include "wayland_pointer_events.h"
 #include "wayland_touch_events.h"

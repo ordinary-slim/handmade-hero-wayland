@@ -73,6 +73,23 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
        xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                        buf, sizeof(buf));
        fprintf(stderr, "utf8: '%s'\n", buf);
+
+       if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+         switch (sym) {
+           case XKB_KEY_Left:
+             client_state->c_x -= 10;
+             break;
+           case XKB_KEY_Right:
+             client_state->c_x += 10;
+             break;
+           case XKB_KEY_Up:
+             client_state->c_y -= 10;
+             break;
+           case XKB_KEY_Down:
+             client_state->c_y += 10;
+             break;
+         }
+       }
 }
 
 void

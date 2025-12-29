@@ -71,14 +71,19 @@ struct client_state {
     struct wl_seat *wl_seat;
     /* Objects */
     struct wl_surface *wl_surface1;
-    struct xdg_surface *xdg_surface;
+    struct xdg_surface *xdg_surface1;
     struct xdg_toplevel *xdg_toplevel;
     struct wl_keyboard *wl_keyboard;
     struct wl_pointer *wl_pointer;
     struct wl_touch *wl_touch;
+
     /* State */
     float offset;
     uint32_t last_frame;
+
+    const int width = 1920, height = 1080;
+    int c_x = 960, c_y = 540;
+    const int c_rad = 100, c_wid = 30;
 
     struct pointer_event pointer_event;
 

@@ -14,10 +14,8 @@ static const struct wl_buffer_listener wl_buffer_listener = {
 struct wl_buffer *
 draw_frame(struct client_state *state)
 {
-    const int width = 1920, height = 1080;// Window resolution
-    const int radius = 100, circle_width = 20, stride_x = 300, stride_y = 300;
-    int stride = width * 4;
-    size_t size = stride * height;
+    int stride = state->width * 4;
+    size_t size = stride * state->height;
 
     int fd = allocate_shm_file(size);
     if (fd == -1) {
@@ -33,20 +31,19 @@ draw_frame(struct client_state *state)
 
     struct wl_shm_pool *pool = wl_shm_create_pool(state->wl_shm, fd, size);
     struct wl_buffer *buffer = wl_shm_pool_create_buffer(pool, 0,
-            width, height, stride, WL_SHM_FORMAT_XRGB8888);
+            state->width, state->height, stride, WL_SHM_FORMAT_XRGB8888);
     wl_shm_pool_destroy(pool);
     close(fd);
 
-    /* Draw moving circles pattern */
-    int offset = (int)state->offset;
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            double d = sqrt((double)(pow((x + offset) % stride_x - stride_x / 2, 2) +
-                       pow((y + offset) % stride_y - stride_y / 2, 2)));
-            if ((d <= radius + circle_width) && (d >= radius - circle_width))
-                data[y * width + x] = 0xFF666666;
+    /* Draw circle */
+    //int offset = (int)state->offset;
+    for (int y = 0; y < state->height; ++y) {
+        for (int x = 0; x < state->width; ++x) {
+            double dist = sqrt((double)(pow(x - state->c_x, 2) + pow(y - state->c_y, 2)));
+            if ((dist <= state->c_rad + state->c_wid) && (state->c_rad + state->c_wid))
+                data[y * state->width + x] = 0xFF666666;
             else
-                data[y * width + x] = 0xFFEEEEEE;
+                data[y * state->width + x] = 0xFFEEEEEE;
         }
     }
 

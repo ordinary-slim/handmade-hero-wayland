@@ -1,3 +1,4 @@
+#pragma once
 #include "wayland.h"
 
 extern const struct wl_touch_listener wl_touch_listener;

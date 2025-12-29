@@ -1,3 +1,4 @@
+#pragma once
 #include "wayland_seat.h"
 #include "draw_frame.h"
 
@@ -11,9 +12,6 @@ xdg_surface_configure(void *data,
 
 void
 xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
-
-void
-wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time);
 
 void
 wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time);

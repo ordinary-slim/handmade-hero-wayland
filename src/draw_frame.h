@@ -1,3 +1,4 @@
+#pragma once
 #include "wayland.h"
 #include "shmpool.h"
 

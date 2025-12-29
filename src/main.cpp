@@ -15,10 +15,10 @@ main(int argc, char *argv[])
     wl_display_roundtrip(state.wl_display);
 
     state.wl_surface1 = wl_compositor_create_surface(state.wl_compositor);
-    state.xdg_surface = xdg_wm_base_get_xdg_surface(
+    state.xdg_surface1 = xdg_wm_base_get_xdg_surface(
             state.xdg_wm_base, state.wl_surface1);
-    xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, &state);
-    state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
+    xdg_surface_add_listener(state.xdg_surface1, &xdg_surface_listener, &state);
+    state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface1);
     xdg_toplevel_set_title(state.xdg_toplevel, "Example client");
     wl_surface_commit(state.wl_surface1);
 
