@@ -1,5 +1,7 @@
 #include "wayland.h"
 
+extern const struct wl_touch_listener wl_touch_listener;
+
 void
 wl_touch_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
                uint32_t time, struct wl_surface *surface, int32_t id,

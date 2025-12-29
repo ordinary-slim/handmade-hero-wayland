@@ -1,5 +1,14 @@
 #include "wayland_keyboard_events.h"
 
+const struct wl_keyboard_listener wl_keyboard_listener = {
+       .keymap = wl_keyboard_keymap,
+       .enter = wl_keyboard_enter,
+       .leave = wl_keyboard_leave,
+       .key = wl_keyboard_key,
+       .modifiers = wl_keyboard_modifiers,
+       .repeat_info = wl_keyboard_repeat_info,
+};
+
 void
 wl_keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
                uint32_t format, int32_t fd, uint32_t size)

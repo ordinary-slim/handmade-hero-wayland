@@ -22,6 +22,10 @@ add_executable(handmade-hero-wayland
     src/wayland_pointer_events.cpp
     src/wayland_keyboard_events.cpp
     src/wayland_touch_events.cpp
+    src/wayland_seat.cpp
+    src/wayland_surface.cpp
+    src/wayland_registry.cpp
+    src/draw_frame.cpp
     ${XDG_SHELL_PROTOCOL_C}
 )
 

@@ -1,5 +1,15 @@
 #include "wayland_touch_events.h"
 
+const struct wl_touch_listener wl_touch_listener = {
+       .down = wl_touch_down,
+       .up = wl_touch_up,
+       .motion = wl_touch_motion,
+       .frame = wl_touch_frame,
+       .cancel = wl_touch_cancel,
+       .shape = wl_touch_shape,
+       .orientation = wl_touch_orientation,
+};
+
 static struct touch_point *
 get_touch_point(struct client_state *client_state, int32_t id)
 {

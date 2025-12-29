@@ -1,6 +1,8 @@
 #pragma once
 #include "wayland.h"
 
+extern const struct wl_pointer_listener wl_pointer_listener;
+
 void
 wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
                uint32_t serial, struct wl_surface *surface,

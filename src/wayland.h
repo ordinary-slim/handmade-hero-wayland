@@ -70,7 +70,7 @@ struct client_state {
     struct xdg_wm_base *xdg_wm_base;
     struct wl_seat *wl_seat;
     /* Objects */
-    struct wl_surface *wl_surface;
+    struct wl_surface *wl_surface1;
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *xdg_toplevel;
     struct wl_keyboard *wl_keyboard;
