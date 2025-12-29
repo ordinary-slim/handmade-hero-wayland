@@ -1,10 +1,8 @@
 #define _POSIX_C_SOURCE 200112L
-#include "wl_events.h"
-
-// Shared memory (CPU + RAM)
-void randname(char *buf);
-int create_shm_file(void);
-int allocate_shm_file(size_t size);
+#include "shmpool.h"
+#include "wayland_keyboard_events.h"
+#include "wayland_pointer_events.h"
+#include "wayland_touch_events.h"
 
 static const struct wl_pointer_listener wl_pointer_listener = {
        .enter = wl_pointer_enter,
@@ -18,12 +16,33 @@ static const struct wl_pointer_listener wl_pointer_listener = {
        .axis_discrete = wl_pointer_axis_discrete,
 };
 
+static const struct wl_keyboard_listener wl_keyboard_listener = {
+       .keymap = wl_keyboard_keymap,
+       .enter = wl_keyboard_enter,
+       .leave = wl_keyboard_leave,
+       .key = wl_keyboard_key,
+       .modifiers = wl_keyboard_modifiers,
+       .repeat_info = wl_keyboard_repeat_info,
+};
+
+static const struct wl_touch_listener wl_touch_listener = {
+       .down = wl_touch_down,
+       .up = wl_touch_up,
+       .motion = wl_touch_motion,
+       .frame = wl_touch_frame,
+       .cancel = wl_touch_cancel,
+       .shape = wl_touch_shape,
+       .orientation = wl_touch_orientation,
+};
+
 static void
 wl_seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
 {
        struct client_state *state = (struct client_state *)data;
 
        bool have_pointer = capabilities & WL_SEAT_CAPABILITY_POINTER;
+       bool have_keyboard = capabilities & WL_SEAT_CAPABILITY_KEYBOARD;
+       bool have_touch = capabilities & WL_SEAT_CAPABILITY_TOUCH;
 
        if (have_pointer && state->wl_pointer == NULL) {
                state->wl_pointer = (struct wl_pointer *)wl_seat_get_pointer(state->wl_seat);
@@ -32,6 +51,24 @@ wl_seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
        } else if (!have_pointer && state->wl_pointer != NULL) {
                wl_pointer_release(state->wl_pointer);
                state->wl_pointer = NULL;
+       }
+
+       if (have_keyboard && state->wl_keyboard == NULL) {
+               state->wl_keyboard = (struct wl_keyboard *)wl_seat_get_keyboard(state->wl_seat);
+               wl_keyboard_add_listener(state->wl_keyboard,
+                               &wl_keyboard_listener, state);
+       } else if (!have_keyboard && state->wl_keyboard != NULL) {
+               wl_keyboard_release(state->wl_keyboard);
+               state->wl_keyboard = NULL;
+       }
+
+       if (have_touch && state->wl_touch == NULL) {
+               state->wl_touch = (struct wl_touch *)wl_seat_get_touch(state->wl_seat);
+               wl_touch_add_listener(state->wl_touch,
+                               &wl_touch_listener, state);
+       } else if (!have_touch && state->wl_touch != NULL) {
+               wl_touch_release(state->wl_touch);
+               state->wl_touch = NULL;
        }
 }
 
@@ -203,6 +240,7 @@ main(int argc, char *argv[])
     struct client_state state = { 0 };
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
+    state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     wl_registry_add_listener(state.wl_registry, &wl_registry_listener, &state);
     wl_display_roundtrip(state.wl_display);
 

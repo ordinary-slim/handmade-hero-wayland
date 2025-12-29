@@ -18,7 +18,10 @@ add_custom_command(
 
 add_executable(handmade-hero-wayland
     src/main.cpp
-    src/alloc_shmpool.cpp
+    src/shmpool.cpp
+    src/wayland_pointer_events.cpp
+    src/wayland_keyboard_events.cpp
+    src/wayland_touch_events.cpp
     ${XDG_SHELL_PROTOCOL_C}
 )
 
@@ -26,4 +29,5 @@ target_link_libraries(handmade-hero-wayland
     PRIVATE
     wayland-client
     rt
+    xkbcommon
 )

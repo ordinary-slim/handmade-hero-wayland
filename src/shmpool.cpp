@@ -1,8 +1,4 @@
-#include <errno.h>
-#include <time.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "shmpool.h"
 
 /* Shared memory support code */
 void randname(char *buf) {
