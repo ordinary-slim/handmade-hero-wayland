@@ -1,4 +1,5 @@
 #include "draw_frame.h"
+#include "shmpool.h"
 
 static void
 wl_buffer_release(void *data, struct wl_buffer *wl_buffer)

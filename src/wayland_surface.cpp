@@ -1,4 +1,5 @@
 #include "wayland_surface.h"
+#include "xdg-shell-client-protocol.h"
 
 const struct xdg_surface_listener xdg_surface_listener = {
     .configure = xdg_surface_configure,
@@ -12,6 +13,11 @@ const struct wl_callback_listener wl_surface_frame_listener = {
   .done = wl_surface_frame_done,
 };
 
+const struct xdg_toplevel_listener xdg_toplevel_listener = {
+  .configure = xdg_toplevel_configure,
+  .close = xdg_toplevel_close,
+};
+
 void
 xdg_surface_configure(void *data,
         struct xdg_surface *xdg_surface, uint32_t serial)
@@ -19,6 +25,10 @@ xdg_surface_configure(void *data,
     struct client_state *state = (struct client_state *)data;
     xdg_surface_ack_configure(xdg_surface, serial);
 
+    if (state->first_frame) {
+      center_circle(state);
+      state->first_frame = false;
+    }
     struct wl_buffer *buffer = draw_frame(state);
     wl_surface_attach(state->wl_surface1, buffer, 0, 0);
     wl_surface_commit(state->wl_surface1);
@@ -57,4 +67,24 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
   wl_surface_commit(state->wl_surface1);
 
   state->last_frame = time;
+}
+
+void
+xdg_toplevel_configure(void *data,
+    struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height,
+    struct wl_array *states)
+{
+  struct client_state *state = (struct client_state *)data;
+  if (width == 0 || height == 0) {
+    /* Compositor is deferring to us */
+    return;
+  }
+  state->width = width, state->height = height;
+}
+
+void
+xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel)
+{
+  struct client_state *state = (struct client_state *)data;
+  state->closed = true;
 }

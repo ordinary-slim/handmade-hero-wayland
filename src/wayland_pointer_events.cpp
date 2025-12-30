@@ -1,5 +1,7 @@
-#define _POSIX_C_SOURCE 200112L // is this important ?
+#include <cstring>
+#include <cstdio>
 #include "wayland_pointer_events.h"
+#include "client_state.h"
 
 const struct wl_pointer_listener wl_pointer_listener = {
        .enter = wl_pointer_enter,

@@ -26,6 +26,7 @@ add_executable(handmade-hero-wayland
     src/wayland_surface.cpp
     src/wayland_registry.cpp
     src/draw_frame.cpp
+    src/client_state.cpp
     ${XDG_SHELL_PROTOCOL_C}
 )
 

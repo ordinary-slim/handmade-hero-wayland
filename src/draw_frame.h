@@ -1,6 +1,5 @@
 #pragma once
-#include "wayland.h"
-#include "shmpool.h"
+#include "client_state.h"
 
 struct wl_buffer *
 draw_frame(struct client_state *state);

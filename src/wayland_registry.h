@@ -1,5 +1,5 @@
 #pragma once
-#include "wayland.h"
+#include <wayland-client.h>
 
 extern const struct wl_registry_listener wl_registry_listener;
 
