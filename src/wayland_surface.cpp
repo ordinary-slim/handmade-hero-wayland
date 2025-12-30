@@ -13,11 +13,6 @@ const struct wl_callback_listener wl_surface_frame_listener = {
   .done = wl_surface_frame_done,
 };
 
-const struct xdg_toplevel_listener xdg_toplevel_listener = {
-  .configure = xdg_toplevel_configure,
-  .close = xdg_toplevel_close,
-};
-
 void
 xdg_surface_configure(void *data,
         struct xdg_surface *xdg_surface, uint32_t serial)
@@ -68,6 +63,11 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 
   state->last_frame = time;
 }
+
+const struct xdg_toplevel_listener xdg_toplevel_listener = {
+  .configure = xdg_toplevel_configure,
+  .close = xdg_toplevel_close,
+};
 
 void
 xdg_toplevel_configure(void *data,

@@ -28,8 +28,7 @@ main(int argc, char *argv[])
     struct wl_callback *cb = wl_surface_frame(state.wl_surface1);
     wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
 
-    while (wl_display_dispatch(state.wl_display)) {
-        /* This space deliberately left blank */
+    while (wl_display_dispatch(state.wl_display) && not(state.closed)) {
     }
 
     return 0;
