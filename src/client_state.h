@@ -1,8 +1,8 @@
 #pragma once
 #include <wayland-client.h>
-#include "wayland_pointer_events.h"
-#include "wayland_keyboard_events.h"
-#include "wayland_touch_events.h"
+#include "wayland/wayland_pointer_events.h"
+#include "wayland/wayland_keyboard_events.h"
+#include "wayland/wayland_touch_events.h"
 
 struct client_state {
     /* Globals */

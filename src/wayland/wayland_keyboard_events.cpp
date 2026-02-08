@@ -3,7 +3,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
-#include "client_state.h"
+#include <client_state.h>
 
 const struct wl_keyboard_listener wl_keyboard_listener = {
        .keymap = wl_keyboard_keymap,

@@ -19,16 +19,18 @@ add_custom_command(
 add_executable(handmade-hero-wayland
     src/main.cpp
     src/shmpool.cpp
-    src/wayland_pointer_events.cpp
-    src/wayland_keyboard_events.cpp
-    src/wayland_touch_events.cpp
-    src/wayland_seat.cpp
-    src/wayland_surface.cpp
-    src/wayland_registry.cpp
+    src/wayland/wayland_pointer_events.cpp
+    src/wayland/wayland_keyboard_events.cpp
+    src/wayland/wayland_touch_events.cpp
+    src/wayland/wayland_seat.cpp
+    src/wayland/wayland_surface.cpp
+    src/wayland/wayland_registry.cpp
     src/draw_frame.cpp
     src/client_state.cpp
     ${XDG_SHELL_PROTOCOL_C}
 )
+
+target_include_directories(handmade-hero-wayland PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 target_link_libraries(handmade-hero-wayland
     PRIVATE

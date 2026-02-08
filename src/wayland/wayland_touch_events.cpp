@@ -1,6 +1,6 @@
 #include <cstdio>
 #include "wayland_touch_events.h"
-#include "client_state.h"
+#include <client_state.h>
 
 const struct wl_touch_listener wl_touch_listener = {
        .down = wl_touch_down,

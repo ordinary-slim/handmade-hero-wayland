@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200112L
-#include "wayland_surface.h"
-#include "wayland_registry.h"
+#include "wayland/wayland_surface.h"
+#include "wayland/wayland_registry.h"
 #include <xkbcommon/xkbcommon.h>
 #include "xdg-shell-client-protocol.h"
 

@@ -1,6 +1,6 @@
 #include <cstdio>
 #include "wayland_seat.h"
-#include "client_state.h"
+#include <client_state.h>
 
 const struct wl_seat_listener wl_seat_listener = {
        .capabilities = wl_seat_capabilities,
