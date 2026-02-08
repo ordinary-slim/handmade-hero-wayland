@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.23)
 project(handmade-hero-wayland VERSION 1.0 LANGUAGES C CXX)
 
+# Build compiler_commands.json for LSPs
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_custom_target(
+  copy-compile-commands ALL
+  ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_BINARY_DIR}/compile_commands.json
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+
 find_program(WAYLAND_SCANNER wayland-scanner REQUIRED)
 
 set(XDG_SHELL_PROTOCOL_C ${CMAKE_SOURCE_DIR}/src/xdg-shell-protocol.c)
