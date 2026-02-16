@@ -1,42 +1,25 @@
 #include "shmpool.h"
 
-/* Shared memory support code */
-void randname(char *buf) {
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    long r = ts.tv_nsec;
-    for (int i = 0; i < 6; ++i) {
-        buf[i] = 'A'+(r&15)+(r&16)*2;
-        r >>= 5;
-    }
-}
-
-int create_shm_file(void) {
+int create_shm_file(size_t size) {
     int retries = 100;
-    do {
-        char name[] = "/wl_shm-XXXXXX";
-        randname(name + sizeof(name) - 7);
-        --retries;
-        int fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
-        if (fd >= 0) {
-            shm_unlink(name);
-            return fd;
-        }
-    } while (retries > 0 && errno == EEXIST);
-    return -1;
-}
+    char name[] = "/handmade-hero-wayland";
 
-int allocate_shm_file(size_t size) {
-    int fd = create_shm_file();
+    int fd = memfd_create(name, MFD_CLOEXEC | MFD_ALLOW_SEALING);
+
     if (fd < 0)
-        return -1;
+      return -1;
+
+    fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK);
+
     int ret;
     do {
-        ret = ftruncate(fd, size);
-    } while (ret < 0 && errno == EINTR);
-    if (ret < 0) {
-        close(fd);
-        return -1;
+      ret = posix_fallocate(fd, 0, size);
+    } while (ret == EINTR);
+    if (ret != 0) {
+      close(fd);
+      errno = ret;
+      return -1;
     }
+
     return fd;
 }

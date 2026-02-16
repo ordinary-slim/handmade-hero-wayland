@@ -12,10 +12,10 @@ add_custom_target(
 
 find_program(WAYLAND_SCANNER wayland-scanner REQUIRED)
 
-set(XDG_SHELL_PROTOCOL_C ${CMAKE_SOURCE_DIR}/src/xdg-shell-protocol.c)
-set(XDG_SHELL_CLIENT_PROTOCOL_H ${CMAKE_SOURCE_DIR}/src/xdg-shell-client-protocol.h)
+set(XDG_SHELL_PROTOCOL_C ${CMAKE_BINARY_DIR}/generated/xdg-shell-protocol.c)
+set(XDG_SHELL_CLIENT_PROTOCOL_H ${CMAKE_BINARY_DIR}/generated/xdg-shell-client-protocol.h)
 
-# wayland-scanner private-code \ < /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \ > xdg-shell-protocol.c wayland-scanner client-header \ < /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \ > xdg-shell-client-protocol.h gcc -o main main.cpp alloc_shmpool.cpp xdg-shell-protocol.c -lwayland-client -lrt
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
 add_custom_command(
     OUTPUT ${XDG_SHELL_PROTOCOL_C} ${XDG_SHELL_CLIENT_PROTOCOL_H}
     COMMAND ${WAYLAND_SCANNER} private-code
@@ -39,7 +39,7 @@ add_executable(handmade-hero-wayland
     ${XDG_SHELL_PROTOCOL_C}
 )
 
-target_include_directories(handmade-hero-wayland PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(handmade-hero-wayland PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/generated)
 
 target_link_libraries(handmade-hero-wayland
     PRIVATE

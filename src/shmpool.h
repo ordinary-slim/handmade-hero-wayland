@@ -6,6 +6,4 @@
 #include <unistd.h>
 
 // Shared memory (CPU + RAM)
-void randname(char *buf);
-int create_shm_file(void);
-int allocate_shm_file(size_t size);
+int create_shm_file(size_t size);

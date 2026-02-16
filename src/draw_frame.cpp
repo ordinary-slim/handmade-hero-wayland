@@ -18,7 +18,7 @@ draw_frame(struct client_state *state)
     int stride = state->width * 4;
     size_t size = stride * state->height;
 
-    int fd = allocate_shm_file(size);
+    int fd = create_shm_file(size);
     if (fd == -1) {
         return NULL;
     }
