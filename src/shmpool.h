@@ -1,5 +1,4 @@
 #pragma once
-#include <errno.h>
 #include <time.h>
 #include <sys/mman.h>
 #include <fcntl.h>

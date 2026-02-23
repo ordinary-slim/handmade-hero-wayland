@@ -22,10 +22,11 @@ xdg_surface_configure(void *data,
 
     if (state->first_frame) {
       center_circle(state);
+      init_buffers(state);
       state->first_frame = false;
     }
-    struct wl_buffer *buffer = draw_frame(state);
-    wl_surface_attach(state->wl_surface1, buffer, 0, 0);
+    draw_frame(state);
+    wl_surface_attach(state->wl_surface1, state->buffers[0].buffer, 0, 0);
     wl_surface_commit(state->wl_surface1);
 }
 
@@ -56,8 +57,8 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
   }
 
   /* Submit a frame for this event */
-  struct wl_buffer *buffer = draw_frame(state);
-  wl_surface_attach(state->wl_surface1, buffer, 0, 0);
+  draw_frame(state);
+  wl_surface_attach(state->wl_surface1, state->buffers[0].buffer, 0, 0);
   wl_surface_damage_buffer(state->wl_surface1, 0, 0, INT32_MAX, INT32_MAX);
   wl_surface_commit(state->wl_surface1);
 

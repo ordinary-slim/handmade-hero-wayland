@@ -1,4 +1,5 @@
 #include "shmpool.h"
+#include <cerrno>
 
 int create_shm_file(size_t size) {
     int retries = 100;
