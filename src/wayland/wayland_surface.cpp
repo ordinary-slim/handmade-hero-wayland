@@ -22,8 +22,10 @@ xdg_surface_configure(void *data,
 
     if (state->first_frame) {
       center_circle(state);
-      init_buffers(state);
       state->first_frame = false;
+    }
+    if ((state->buffers[0].width != state->width) || (state->buffers[0].height != state->height)) {
+      init_buffers(state);
     }
     draw_frame(state);
     wl_surface_attach(state->wl_surface1, state->buffers[0].buffer, 0, 0);
