@@ -1,9 +1,9 @@
-#include "client_state.h"
 #include "shmpool.h"
 #include <time.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <client_state.h>
 
 wayland_buffer
 get_buffer(struct client_state *state) {

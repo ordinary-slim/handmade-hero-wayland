@@ -1,8 +1,8 @@
 #include "wayland_registry.h"
 #include "wayland_surface.h"
-#include "client_state.h"
 #include "xdg-shell-client-protocol.h"
 #include <cstring>
+#include <client_state.h>
 
 const struct wl_registry_listener wl_registry_listener = {
     .global = registry_global,

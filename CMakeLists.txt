@@ -34,12 +34,12 @@ add_executable(handmade-hero-wayland
     src/wayland/wayland_seat.cpp
     src/wayland/wayland_surface.cpp
     src/wayland/wayland_registry.cpp
+    src/wayland/client_state.cpp
     src/draw_frame.cpp
-    src/client_state.cpp
     ${XDG_SHELL_PROTOCOL_C}
 )
 
-target_include_directories(handmade-hero-wayland PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/generated)
+target_include_directories(handmade-hero-wayland PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/wayland ${CMAKE_BINARY_DIR}/generated)
 
 target_link_libraries(handmade-hero-wayland
     PRIVATE
